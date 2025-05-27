@@ -1,0 +1,4 @@
+datasets:
+  - json_path: /content/drive/My Drive/llava/instruct_data/llava_wild_4v_39k_filtered/one-vision.json
+    sampling_strategy: all
+ 
