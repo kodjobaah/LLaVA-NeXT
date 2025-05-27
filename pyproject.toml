@@ -27,15 +27,11 @@ standalone = [
 
 train = [
     "llava[standalone]",
-    "numpy==1.26.1",
     "open_clip_torch",
     "fastapi",
     "markdown2[all]",
-    "numpy",
     "requests",
     "sentencepiece",
-    "torch==2.1.2",
-    "torchvision==0.16.2",
     "uvicorn",
     "wandb",
     "deepspeed==0.14.4",
@@ -58,7 +54,6 @@ train = [
     "av",
     "decord",
     "tyro",
-    "scipy",
 ]
 
 [project.urls]
