@@ -15,7 +15,9 @@
 # IMPORTANT: Update this to your Mamba model path or HF ID.
 # In Colab, you'd typically download this to a local path or mount Google Drive.
 # Example: If you download a model, it might be in /content/mamba-2.8b-hf
-LLM_VERSION="state-spaces/mamba-2.8b" # <--- UPDATE THIS PATH
+# LLM_VERSION="state-spaces/mamba-2.8b" # <--- UPDATE THIS PATH
+LLM_VERSION="state-spaces/mamba-130m"
+export CUDA_VISIBLE_DEVICES=""
 LLM_VERSION_CLEAN="${LLM_VERSION//\//_}"
 VISION_MODEL_VERSION="google/siglip-so400m-patch14-384"
 VISION_MODEL_VERSION_CLEEN="${VISION_MODEL_VERSION//\//_}"
@@ -38,6 +40,14 @@ echo "RUN_NAME: ${RUN_NAME}"
 # Example: NUM_GPUS=1 if you have one GPU.
 NUM_GPUS=1 # <--- Adjust based on your Colab instance's GPU count
 
+export DATA_PATH="/content/drive/My Drive/llava/mamba-train-collab.yaml" 
+export IMAGE_FOLDER="/content/drive/My Drive/llava/instruct_data/llava_wild_4v_39k_filtered/images"
+
+export VIDEO_FOLDER="/content/drive/My Drive/llava/instruct_data/llava_wild_4v_39k_filtered/video"
+# --- Colab Google Drive Output Directory ---
+export OUTPUT_DIR="/content/drive/My Drive/llava/checkpoints/${RUN_NAME}"
+mkdir -p "${OUTPUT_DIR}"
+
 ACCELERATE_CPU_AFFINITY=1 torchrun \
     --nproc_per_node="${NUM_GPUS}" \
     llava/train/train_mem.py \
@@ -45,12 +55,9 @@ ACCELERATE_CPU_AFFINITY=1 torchrun \
     --model_name_or_path "${PREV_STAGE_CHECKPOINT}" \
     --model_class_name "LlavaMamba" `# CRITICAL: Tells train.py to load your specific model wrapper`
     --version "${PROMPT_VERSION}" \
-    # --- Colab Data Paths ---
-    # You'll need to upload your data or mount Google Drive.
-    # Example: /content/llava_data for images, /content/next_3p2m_single_image.yaml for data config
-    --data_path "/content/drive/My Drive/llava/mamba-train-collab.yaml" # <--- UPDATE THIS PATH
-    --image_folder "/content/drive/My Drive/llava/instruct_data/llava_wild_4v_39k_filtered/images" # <--- UPDATE THIS PATH
-    --video_folder "/content/drive/My Drive/llava/instruct_data/llava_wild_4v_39k_filtered/video" # <--- UPDATE THIS PATH (if you have video data)
+    --data_path $DATA_PATH \ 
+    --image_folder $IMAGE_FOLDER \ 
+    --video_folder $VIDEO_FOLDER \
     --mm_tunable_parts="mm_vision_tower,mm_mlp_adapter,mm_language_model" \
     --mm_vision_tower_lr=2e-6 \
     --vision_tower "${VISION_MODEL_VERSION}" \
@@ -64,9 +71,7 @@ ACCELERATE_CPU_AFFINITY=1 torchrun \
     --mm_patch_merge_type spatial_unpad \
     --bf16 True \
     --run_name "${RUN_NAME}" \
-    # --- Colab Output Directory ---
-    # Output checkpoints will go here. Consider mounting Google Drive for persistent storage.
-    --output_dir "/content/drive/My Drive/llava/checkpoints/${RUN_NAME}" # <--- UPDATE THIS PATH for outputs
+    --output_dir $OUTPUT_DIR \
     --num_train_epochs 1 \
     --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 4 \
